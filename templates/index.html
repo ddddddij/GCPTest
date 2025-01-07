@@ -324,21 +324,143 @@
             const sendButton = document.getElementById('sendMessage');
             const chatMessages = document.getElementById('chatMessages');
 
-            async function sendMessage() {
-                const message = chatInput.value.trim();
-                if (!message) return;
-
-                addMessage(message, true);
-                chatInput.value = '';
+            // 辅助函数：创建一个临时的文本区域来复制内容
+            function fallbackCopyTextToClipboard(text, button) {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                
+                // 将文本区域设置为不可见
+                textArea.style.position = 'fixed';
+                textArea.style.top = '0';
+                textArea.style.left = '0';
+                textArea.style.width = '2em';
+                textArea.style.height = '2em';
+                textArea.style.padding = '0';
+                textArea.style.border = 'none';
+                textArea.style.outline = 'none';
+                textArea.style.boxShadow = 'none';
+                textArea.style.background = 'transparent';
+                
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
 
                 try {
-                    const response = await fetch('/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message })
-                    });
+                    document.execCommand('copy');
+                    updateCopyButton(button, true);
+                } catch (err) {
+                    console.error('Fallback: Oops, unable to copy', err);
+                    updateCopyButton(button, false);
+                }
 
-                    const data = await response.json();
+                document.body.removeChild(textArea);
+            }
+
+            // 更新复制按钮的状态
+            function updateCopyButton(button, success) {
+                const copyText = button.querySelector('.copy-text');
+                const icon = button.querySelector('i');
+                
+                if (success) {
+                    button.classList.add('copied');
+                    copyText.textContent = 'Copied!';
+                    icon.className = 'fas fa-check check-icon';
+                    
+                    setTimeout(() => {
+                        button.classList.remove('copied');
+                        copyText.textContent = 'Copy';
+                        icon.className = 'fas fa-copy copy-icon';
+                    }, 2000);
+                } else {
+                    button.classList.add('error');
+                    copyText.textContent = 'Error!';
+                    icon.className = 'fas fa-times';
+                    
+                    setTimeout(() => {
+                        button.classList.remove('error');
+                        copyText.textContent = 'Copy';
+                        icon.className = 'fas fa-copy copy-icon';
+                    }, 2000);
+                }
+            }
+
+            // 修改的 addMessage 函数
+            function addMessage(message, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+                
+                if (isUser) {
+                    messageDiv.textContent = message;
+                } else {
+                    // 处理机器人消息中的代码块
+                    const formattedMessage = message.replace(/```([\s\S]*?)```/g, function(match, code) {
+                        const codeWithoutFirstLine = code.split('\n');
+                        const language = codeWithoutFirstLine[0].trim();
+                        const actualCode = codeWithoutFirstLine.slice(1).join('\n').trim();
+                        
+                        // 生成唯一的ID
+                        const codeBlockId = 'code-' + Math.random().toString(36).substr(2, 9);
+                        
+                        return `
+                            <pre>
+                                <div class="code-header">
+                                    <span>${language}</span>
+                                    <button class="copy-button" data-code-id="${codeBlockId}">
+                                        <i class="fas fa-copy copy-icon"></i>
+                                        <span class="copy-text">Copy</span>
+                                    </button>
+                                </div>
+                                <code id="${codeBlockId}">${actualCode}</code>
+                            </pre>
+                        `;
+                    });
+                    messageDiv.innerHTML = formattedMessage;
+                    
+                    // 为新添加的复制按钮添加事件监听器
+                    const copyButtons = messageDiv.querySelectorAll('.copy-button');
+                    copyButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const codeId = this.getAttribute('data-code-id');
+                            const codeElement = document.getElementById(codeId);
+                            const textToCopy = codeElement.textContent;
+                            
+                            // 首先尝试使用现代 API
+                            if (navigator.clipboard && window.isSecureContext) {
+                                navigator.clipboard.writeText(textToCopy)
+                                    .then(() => updateCopyButton(this, true))
+                                    .catch(() => fallbackCopyTextToClipboard(textToCopy, this));
+                            } else {
+                                // 如果不支持现代 API，使用后备方法
+                                fallbackCopyTextToClipboard(textToCopy, this);
+                            }
+                        });
+                    });
+                }
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            async function sendMessage() {
+                    const message = chatInput.value.trim();
+                    if (!message) return;
+
+                    // 添加用户消息
+                    addMessage(message, true);
+                    chatInput.value = '';
+
+                    try {
+                        // 发送消息到后端
+                        const response = await fetch('/chat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ message })
+                        });
+
+                        const data = await response.json();
+                        // 修改这里，使用 data.response 而不是 data.reply
                     if (data.error) {
                         addMessage(data.error);
                     } else {
@@ -350,23 +472,13 @@
                 }
             }
 
-            function addMessage(message, isUser = false) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-                messageDiv.textContent = message;
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-
-            if (sendButton && chatInput) {
-                sendButton.addEventListener('click', sendMessage);
-                chatInput.addEventListener('keydown', function (e) {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                    }
-                });
-            }
+            sendButton.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
 
             // History functionality
             const historyList = document.getElementById('historyList');
