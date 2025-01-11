@@ -257,7 +257,9 @@ def test_method_error(instance):
         if not has_pytest_import:
             final_lines.append('import pytest')
         if not has_module_import:
-            final_lines.append(f'from {module_name} import Calculator')
+            # 动态提取类和异常名
+            class_and_exception_names = self._extract_class_and_exception_names(code)
+            final_lines.append(f'from {module_name} import {", ".join(class_and_exception_names)}')
         
         if not has_fixture:
             final_lines.extend([
@@ -271,7 +273,27 @@ def test_method_error(instance):
         # 添加其余的测试代码
         final_lines.extend(cleaned_lines)
         
+        # 移除多余的导入
+        final_lines = [line for line in final_lines if not line.startswith('from bank_account import')]
+        
         # 确保代码的完整性和正确性
         test_code = '\n'.join(final_lines)
         
         return test_code.split('\n')
+
+    def _extract_class_and_exception_names(self, code):
+        """
+        从生成的代码中提取类和异常名
+
+        Args:
+            code (str): 生成的代码
+
+        Returns:
+            list: 类和异常名列表
+        """
+        import re
+        pattern = re.compile(r'from \w+ import (\w+(?:, \w+)*)')
+        matches = pattern.findall(code)
+        if matches:
+            return matches[0].split(', ')
+        return []
