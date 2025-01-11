@@ -122,7 +122,7 @@ class GLMService:
             result = response.json()
             generated_code = result['choices'][0]['message']['content']
 
-            test_cases = self._parse_test_cases(generated_code)
+            test_cases = self._parse_test_cases(generated_code, module_name)
             return test_cases
 
         except Exception as e:
@@ -205,13 +205,14 @@ def test_method_error(instance):
             requirements=requirements
         )
 
-    def _parse_test_cases(self, generated_code):
+    def _parse_test_cases(self, generated_code, module_name):
         """
         Parse the generated code into a list of test cases, removing explanatory text
         Replace any 'source_code' imports with the actual module name.
 
         Args:
             generated_code (str): Raw generated code from GLM model
+            module_name (str): The name of the module to import in test cases
 
         Returns:
             list: Clean test case code lines
@@ -235,7 +236,7 @@ def test_method_error(instance):
             # 检查是否已包含必要的导入和fixture
             if line.startswith('import pytest'):
                 has_pytest_import = True
-            elif 'from calculator import' in line:
+            elif f'from {module_name} import' in line:
                 has_module_import = True
             elif '@pytest.fixture' in line:
                 has_fixture = True
@@ -256,7 +257,7 @@ def test_method_error(instance):
         if not has_pytest_import:
             final_lines.append('import pytest')
         if not has_module_import:
-            final_lines.append('from calculator import Calculator')
+            final_lines.append(f'from {module_name} import Calculator')
         
         if not has_fixture:
             final_lines.extend([
