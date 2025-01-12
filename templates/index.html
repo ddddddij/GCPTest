@@ -222,6 +222,12 @@
                 </div>
 
             </div>
+            <!-- 新增显示测试代码的区域 -->
+            <div class="test-code-container">
+                <h2>生成的测试代码</h2>
+                <pre id="testCode">{{ test_code|safe }}</pre>
+                <button id="copyTestCode">复制测试代码</button>
+            </div>
             {% else %}
             <h1 id="typingText">Hand in your requirements and code, and we'll help you generate test cases.</h1>
             <form method="post" enctype="multipart/form-data">
@@ -635,6 +641,21 @@
             //     location.reload(true);  // 强制刷新页面，忽略缓存
 
             // }
+
+            // 复制测试代码功能
+            const copyButton = document.getElementById('copyTestCode');
+            if (copyButton) {
+                copyButton.addEventListener('click', function () {
+                    const testCodeElement = document.getElementById('testCode');
+                    const textToCopy = testCodeElement.innerText;
+
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        alert('测试代码已复制到剪切板');
+                    }).catch(err => {
+                        console.error('复制失败:', err);
+                    });
+                });
+            }
         });
 
 

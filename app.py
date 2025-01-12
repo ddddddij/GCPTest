@@ -12,10 +12,10 @@ import logging
 
 # 设置日志记录
 logging.basicConfig(level=logging.INFO,  # 设置日志级别为 INFO
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    handlers=[
-                        logging.StreamHandler()  # 输出日志到控制台
-                    ])
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+    logging.StreamHandler()  # 输出日志到控制台
+    ])
 
 app = Flask(__name__)
 
@@ -103,10 +103,12 @@ def index():
             
             # 准备响应数据
             download_url = url_for('download_test_cases', filename=os.path.basename(test_case_file_path))
+            test_code = '\n'.join(test_cases)
             return render_template('index.html', 
                                 coverage_report=coverage_reports,
                                 test_output=test_output,
-                                download_url=download_url)
+                                download_url=download_url,
+                                test_code=test_code)
 
         except Exception as e:
             error_trace = traceback.format_exc()

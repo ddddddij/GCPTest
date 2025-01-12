@@ -635,7 +635,6 @@ input[type="submit"]:hover {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-
 .go-back-btn {
     background-color: #ffffff;
     color: #764ba2;
@@ -652,4 +651,42 @@ input[type="submit"]:hover {
 
 .go-back-btn:hover {
     background-color: #eeeeee;
+}
+
+.test-code-container {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+}
+
+.test-code-container h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.test-code-container pre {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+#copyTestCode {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #667eea;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#copyTestCode:hover {
+    background-color: #764ba2;
 }
