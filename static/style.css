@@ -147,6 +147,7 @@ body {
     position: relative;
     flex-direction: column;
     background: linear-gradient(135deg, #e0eafc, #cfdef3);
+    z-index: 1;
 }
 
 .container {
@@ -178,7 +179,7 @@ label {
     font-size: 1.2em;
 }
 
-textarea {
+/* textarea {
     width: calc(100% - 30px);
     padding: 15px;
     border-radius: 10px;
@@ -188,6 +189,24 @@ textarea {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s, box-shadow 0.3s;
     overflow: hidden;
+} */
+
+textarea#test_requirements {
+    width: 100%;
+    min-height: 60px;
+    /* 设置最小高度 */
+    max-height: 300px;
+    /* 设置最大高度，防止高度过大 */
+    padding: 10px;
+    font-size: 16px;
+    line-height: 1.5;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    resize: none;
+    /* 禁用手动调整大小 */
+    overflow: hidden;
+    /* 防止滚动条出现 */
+    box-sizing: border-box;
 }
 
 textarea:focus {
@@ -243,7 +262,7 @@ input[type="submit"]:hover {
 
 .download-button {
     display: inline-block;
-    padding: 15px 25px;
+    padding: 15px 30px;
     background-color: #ffffff;
     color: #764ba2;
     border-radius: 10px;
@@ -290,41 +309,86 @@ input[type="submit"]:hover {
 }
 
 .modal {
-    display: none;
     position: fixed;
-    z-index: 1000;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
     align-items: center;
     justify-content: center;
-    animation: fadeIn 0.5s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+    z-index: 1000;
 }
 
 .modal.show {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
 }
 
 .modal-content {
     background: linear-gradient(135deg, #667eea, #764ba2);
-    padding: 50px;
-    border-radius: 25px;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+    border-radius: 15px;
     text-align: center;
-    max-width: 500px;
-    width: 90%;
-    margin: auto;
-    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-    opacity: 1;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: vividEntrance 0.8s ease forwards;
+    /* 使用新的动画 */
+    position: relative;
+    color: #fff;
 }
 
 .modal-content p {
-    font-size: 2em;
-    color: #ffffff;
-    margin-bottom: 30px;
-    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+}
+
+.modal-content .close-btn {
+    background: #3ac569;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 5px 15px rgba(58, 197, 105, 0.4);
+}
+
+.modal-content .close-btn:hover {
+    background: #34a556;
+    transform: scale(1.05);
+}
+
+.modal-content .close-btn:active {
+    transform: scale(0.95);
+}
+
+@keyframes vividEntrance {
+    0% {
+        transform: scale(0.5) rotate(-20deg);
+        opacity: 0;
+    }
+
+    40% {
+        transform: scale(1.2) rotate(10deg);
+        opacity: 0.8;
+    }
+
+    70% {
+        transform: scale(0.95) rotate(-5deg);
+        opacity: 0.95;
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
 }
 
 .close-btn {
@@ -617,7 +681,7 @@ input[type="submit"]:hover {
 .summary-item .value {
     font-family: monospace;
     font-size: 1.1em;
-    color: #4CAF50;
+    color: #ffffff;
     background: rgba(0, 0, 0, 0.1);
     padding: 5px 10px;
     border-radius: 4px;
@@ -645,8 +709,11 @@ input[type="submit"]:hover {
     font-size: 1.2em;
     font-weight: bold;
     margin-top: 20px;
+    margin-bottom: 20px;
+    /* 增加底部间距 */
     transition: background-color 0.3s;
-
+    width: 150px;
+    text-align: center;
 }
 
 .go-back-btn:hover {
@@ -659,6 +726,7 @@ input[type="submit"]:hover {
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     margin-top: 20px;
+    position: relative;
 }
 
 .test-code-container h2 {
@@ -677,7 +745,9 @@ input[type="submit"]:hover {
 }
 
 #copyTestCode {
-    margin-top: 10px;
+    position: absolute;
+    top: 20px;
+    right: 20px;
     padding: 10px 20px;
     background-color: #667eea;
     color: white;
@@ -689,4 +759,78 @@ input[type="submit"]:hover {
 
 #copyTestCode:hover {
     background-color: #764ba2;
+}
+
+.results-header {
+    display: flex;
+    align-items: center;
+    /* 垂直居中对齐 */
+    justify-content: flex-start;
+    /* 从左向右对齐 */
+    padding: 0 20px;
+    /* 两侧内边距 */
+    max-width: calc(100% - 40px);
+    /* 确保内容不超过主体框 */
+    margin: 0 auto;
+    /* 居中对齐 */
+}
+
+/* 覆盖率报告标题样式 */
+.results-header h2 {
+    font-size: 28px;
+    margin-right: auto;
+    /* 将标题和按钮分隔 */
+    color: #ffffff;
+    white-space: nowrap;
+    /* 防止换行 */
+}
+
+/* 通用按钮样式 */
+.download-button,
+.go-back-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 18px;
+    line-height: 1;
+    /* 让文字垂直居中 */
+    text-align: center;
+    background: #ffffff;
+    color: #667eea;
+    border: 2px solid #667eea;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 120px;
+    /* 确保按钮宽度一致 */
+    margin-left: 10px;
+    /* 按钮之间的间距 */
+}
+
+/* 按钮悬停效果 */
+.download-button:hover,
+.go-back-btn:hover {
+    background-color: #667eea;
+    color: #ffffff;
+}
+
+/* 适配屏幕宽度 */
+@media (max-width: 768px) {
+    .results-header {
+        flex-wrap: wrap;
+        /* 小屏幕时换行显示 */
+        justify-content: center;
+        /* 居中对齐 */
+    }
+
+    .download-button,
+    .go-back-btn {
+        margin-left: 0;
+        /* 小屏幕时取消按钮间距 */
+        margin-top: 10px;
+        /* 添加垂直间距 */
+    }
+}
+
+.download-button {
+    margin-right: 15px;
+    /* 设置右侧间距 */
 }
